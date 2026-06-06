@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resume Matcher – Professional Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='sidebar.css') }}">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='sidebar.css') }}">
+
+    <style>
+        .hl {
+    background: yellow;
+    color: black;
+}
+
+        body { background:#f4f7fb; font-family:"Segoe UI"; }
+        .sidebar {
+            height:100vh; width:240px; background:#104f9f; position:fixed;
+            left:0; top:0; padding:25px 20px; color:white;
+        }
+        .sidebar a { color:#dce6f8; display:block; margin:15px 0; font-size:16px; text-decoration:none; }
+        .sidebar a:hover { color:white; }
+        .main { margin-left:260px; padding:30px; }
+        .stat-card {
+            background:white; padding:20px; border-radius:12px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.07); text-align:center;
+        }
+        .stat-value { font-size:28px; font-weight:bold; color:#0d6efd; }
+        .resume-card {
+            background:white; padding:20px; border-radius:12px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.08); margin-bottom:18px;
+        }
+        .score { font-size:20px; font-weight:bold; color:#0d6efd; }
+    </style>
+</head>
+
+<body>
+
+{% include "sidebar.html" %}
+
+<div class="main">
+
+    <h2 class="mb-4">Job Description & Resume Analyzer</h2>
+
+    {% if message %}
+        <div class="text-danger mb-3">{{ message }}</div>
+    {% endif %}
+
+    <!-- Upload -->
+    <div class="card p-4 mb-4">
+        <form action="/matcher" method="POST" enctype="multipart/form-data">
+            <label class="form-label">Job Description</label>
+            <textarea name="job_description" class="form-control mb-3" rows="4" required></textarea>
+
+            <label class="form-label">Upload Resumes</label>
+            <input type="file" name="resumes" class="form-control mb-3" multiple required>
+
+            <button class="btn btn-primary px-4">Analyze</button>
+        </form>
+    </div>
+
+    {% if stats %}
+    <h3 class="mb-4">Top Matching Resumes</h3>
+
+    <div class="row mb-4">
+        <div class="col-md-3"><div class="stat-card"><div class="stat-value">{{ stats.total }}</div>Total</div></div>
+        <div class="col-md-3"><div class="stat-card"><div class="stat-value">{{ stats.min }}%</div>Min</div></div>
+        <div class="col-md-3"><div class="stat-card"><div class="stat-value">{{ stats.max }}%</div>Max</div></div>
+        <div class="col-md-3"><div class="stat-card"><div class="stat-value">{{ stats.average }}%</div>Avg</div></div>
+    </div>
+    {% endif %}
+
+    {% if results %}
+    <h3 class="mb-3">Matching Results</h3>
+    {% endif %}
+
+    {% for r in results %}
+    <div class="resume-card">
+        <div class="d-flex justify-content-between">
+            <h5>{{ r.filename }}</h5>
+            <div class="score">{{ r.score }}%</div>
+        </div>
+
+        <button class="btn btn-outline-primary mt-3"
+                data-bs-toggle="modal"
+                data-bs-target="#modal{{ loop.index }}">
+            Preview
+        </button>
+
+        <div class="modal fade" id="modal{{ loop.index }}">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5>{{ r.filename }}</h5>
+                        <button class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+            <div class="modal-body">
+    <div style="white-space: pre-wrap; font-size: 15px; line-height: 1.6;">
+        {{ r.preview|safe }}
+    </div>
+</div>
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
