@@ -1,0 +1,12 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", sans-serif;
+}
+
+/* All page content will shift right by 260px */
+.main {
+    margin-left: 260px !important;
+    padding: 30px;
+    box-sizing: border-box;
+}
