@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>History</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='sidebar.css') }}">
+
+    <style>
+/* GLOBAL FIX: Prevent sidebar overlap on all pages */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", sans-serif;
+}
+
+.main {
+    margin-left: 260px !important; /* Ensures content moves right */
+    padding: 30px;
+}
+</style>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='sidebar.css') }}">
+
+
+    <style>
+        .main {
+            margin-left: 260px;
+            padding: 30px;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        .history-box {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            width: 95%;
+            box-shadow: 0 3px 7px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            background: #0d6efd;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-size: 16px;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            font-size: 15px;
+        }
+
+        tr:hover {
+            background: #f0f4ff;
+        }
+
+        .no-data {
+            padding: 20px;
+            font-size: 18px;
+            color: #888;
+        }
+
+        .btn-clear {
+            background: red;
+            padding: 8px 18px;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-clear:hover {
+            background: darkred;
+        }
+
+        /* Search Box */
+        .search-box {
+            margin-bottom: 15px;
+        }
+
+        .search-input {
+            padding: 10px;
+            width: 300px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+
+{% include "sidebar.html" %}
+
+<div class="main">
+    <h2>History</h2>
+
+    <div class="history-box">
+
+        {% if history|length == 0 %}
+            <p class="no-data">No history available.</p>
+        {% else %}
+
+        <!-- Search -->
+        <div class="search-box">
+            <input type="text" class="search-input" id="searchInput" onkeyup="searchTable()" placeholder="Search resume name...">
+        </div>
+
+        <table id="historyTable">
+            <tr>
+                <th>Resume Name</th>
+                <th>Score</th>
+                <th>Date</th>
+            </tr>
+
+            {% for item in history %}
+            <tr>
+                <td>{{ item.filename }}</td>
+                <td>{{ item.score }}%</td>
+                <td>{{ item.date }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function searchTable() {
+    let input = document.getElementById("searchInput").value.toLowerCase();
+    let rows = document.querySelectorAll("#historyTable tr");
+
+    rows.forEach((row, i) => {
+        if (i === 0) return;
+
+        let name = row.cells[0].textContent.toLowerCase();
+        row.style.display = name.includes(input) ? "" : "none";
+    });
+}
+</script>
+
+</body>
+</html>
