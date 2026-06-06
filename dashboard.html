@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+
+    <!-- LOAD CSS FROM STATIC FOLDER -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='sidebar.css') }}">
+
+    <!-- Page-specific CSS -->
+    <style>
+        .cards {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            width: 220px;
+            box-shadow: 0px 3px 7px rgba(0,0,0,0.1);
+        }
+
+        .card h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .card p {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 10px 0 0;
+            color: #0d6efd;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .chart-box,
+        .uploads-box {
+            margin-top: 40px;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 3px 7px rgba(0,0,0,0.1);
+            width: 95%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th {
+            text-align: left;
+            padding: 10px;
+            background: #0d6efd;
+            color: white;
+        }
+
+        table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+    {% include "sidebar.html" %}
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+
+        <h2>Dashboard</h2>
+        <p>Welcome to the dashboard.</p>
+
+        <div class="cards">
+            <div class="card">
+                <h3>Total Resumes</h3>
+                <p>{{ total_resumes }}</p>
+            </div>
+
+            <div class="card">
+                <h3>Top Score</h3>
+                <p>{{ "%.2f"|format(top_score) }}%</p>
+            </div>
+
+            <div class="card">
+                <h3>Average Score</h3>
+                <p>{{ "%.2f"|format(avg_score) }}%</p>
+            </div>
+
+            <div class="card">
+                <h3>Min Score</h3>
+                <p>{{ "%.2f"|format(min_score) }}%</p>
+            </div>
+        </div>
+
+        <div class="chart-box">
+            <h3>Upload Statistics</h3>
+            <canvas id="uploadChart"></canvas>
+        </div>
+
+        <div class="uploads-box">
+            <h3>Recent Uploads</h3>
+
+            <table>
+                <tr>
+                    <th>Resume Name</th>
+                    <th>Score</th>
+                    <th>Date</th>
+                </tr>
+
+                {% for file in recent_uploads %}
+                <tr>
+                    <td>{{ file.filename }}</td>
+                    <td>{{ "%.2f"|format(file.score) }}%</td>
+                    <td>{{ file.date }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        const ctx = document.getElementById('uploadChart').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ upload_dates | safe }},
+                datasets: [{
+                    label: "Uploads per Day",
+                    data: {{ upload_counts | safe }},
+                    borderColor: "#0d6efd",
+                    backgroundColor: "rgba(13,110,253,0.2)",
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 5,
+                    pointBackgroundColor: "#0d6efd"
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
