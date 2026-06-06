@@ -1,6 +1,8 @@
 from flask import Flask, request, render_template
 import os
 import re
+import json
+from datetime import datetime
 import pdfplumber
 import docx2txt
 from markupsafe import Markup
@@ -205,27 +207,70 @@ def dashboard():
 @app.route("/history")
 def history():
 
-    sample_history = [
-        {
-            "filename": "resume1.pdf",
-            "score": 89.5,
-            "date": "2026-06-06 14:00"
-        },
-        {
-            "filename": "resume2.docx",
-            "score": 75.2,
-            "date": "2026-06-06 14:05"
-        }
-    ]
+    scores_file = "data/scores.json"
+
+    if os.path.exists(scores_file):
+        try:
+            with open(scores_file, "r") as f:
+                history_data = json.load(f)
+        except:
+            history_data = []
+    else:
+        history_data = []
 
     return render_template(
         "history.html",
-        history=sample_history
+        history=history_data
     )
 
 @app.route("/settings")
 def settings():
     return render_template("settings.html")
+
+@app.route("/clear-history", methods=["POST"])
+def clear_history():
+
+    os.makedirs("data", exist_ok=True)
+
+    with open("data/scores.json", "w") as f:
+        json.dump([], f)
+
+    return "", 200
+
+
+@app.route("/clear-uploads", methods=["POST"])
+def clear_uploads():
+
+    folder = app.config["UPLOAD_FOLDER"]
+
+    if os.path.exists(folder):
+        for file in os.listdir(folder):
+            path = os.path.join(folder, file)
+
+            if os.path.isfile(path):
+                os.remove(path)
+
+    return "", 200
+
+
+@app.route("/reset-system", methods=["POST"])
+def reset_system():
+
+    os.makedirs("data", exist_ok=True)
+
+    with open("data/scores.json", "w") as f:
+        json.dump([], f)
+
+    folder = app.config["UPLOAD_FOLDER"]
+
+    if os.path.exists(folder):
+        for file in os.listdir(folder):
+            path = os.path.join(folder, file)
+
+            if os.path.isfile(path):
+                os.remove(path)
+
+    return "", 200
 
 @app.route("/matcher", methods=["POST"])
 def matcher():
@@ -327,6 +372,31 @@ def matcher():
         key=lambda x: x["score"],
         reverse=True
     )
+
+    # SAVE RESULTS TO HISTORY
+
+    os.makedirs("data", exist_ok=True)
+
+    scores_file = "data/scores.json"
+
+    if os.path.exists(scores_file):
+        try:
+            with open(scores_file, "r") as f:
+                history_data = json.load(f)
+        except:
+            history_data = []
+    else:
+        history_data = []
+
+    for r in results:
+        history_data.append({
+            "filename": r["filename"],
+            "score": r["score"],
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        })
+
+    with open(scores_file, "w") as f:
+        json.dump(history_data, f, indent=4)
 
     stats = {
         "total": len(scores),
